@@ -1,5 +1,3 @@
 (
-    prefabs: (
-        player: "prefabs/player.ron",
-    )
+    prefabs: [ "prefabs/player.ron" ]
 )

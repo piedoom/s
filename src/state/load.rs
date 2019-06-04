@@ -10,7 +10,8 @@ use amethyst::{
 };
 
 use crate::asset::config::GameConfig;
-
+use crate::asset::prefab::{initialize_prefabs, update_prefabs};
+use crate::state::main::MainGameState;
 /// The hard-coded path of the parent configuration
 const CONFIG_PATH: &'static str = "config/config.ron";
 
@@ -52,14 +53,29 @@ impl SimpleState for LoadConfigState {
 #[derive(Default)]
 pub struct LoadState {
     pub config_handle: Option<Handle<GameConfig>>,
-    pub progress: ProgressCounter,
+    pub prefab_progress: Option<ProgressCounter>,
 }
 
 impl SimpleState for LoadState {
-    fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
-        let config_storage = &data.world.read_resource::<AssetStorage<GameConfig>>();
-        let config = &config_storage.get(&self.config_handle.clone().unwrap()).unwrap();
+    fn on_start(&mut self, mut data: StateData<'_, GameData<'_, '_>>) {
+        // initialize the prefab resource
+        self.prefab_progress = Some(initialize_prefabs(&mut data.world, self.config_handle.clone().unwrap()));
+    }
 
-        dbg!(config);
+    fn update(
+        &mut self,
+        data: &mut StateData<'_, GameData<'_, '_>>,
+    ) -> SimpleTrans {
+        // check to see if our prefabs are done loading
+        if let Some(ref counter) = self.prefab_progress.as_ref() {
+            if counter.is_complete() {
+                // If so, reset our progress, and updae prefabs
+                self.prefab_progress = None;
+                update_prefabs(&mut data.world);
+                // Create a new main state now that our resource is full of prefabs
+                return Trans::Switch(Box::new(MainGameState{}));
+            }
+        }
+        Trans::None
     }
 }

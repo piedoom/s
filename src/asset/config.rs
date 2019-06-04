@@ -12,21 +12,8 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq, Eq)]
 pub struct GameConfig {
-    pub prefabs: PrefabPathsConfig,
-}
-
-/// paths to all Sprite Sheets
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct PrefabPathsConfig {
-    pub player: PathBuf,
-}
-
-impl<'a> Default for PrefabPathsConfig {
-    fn default() -> Self {
-        Self {
-            player: PathBuf::new()
-        }
-    }
+    /// Path to all prefabs we want to load
+    pub prefabs: Vec<String>,
 }
 
 impl Asset for GameConfig {

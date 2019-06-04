@@ -4,6 +4,10 @@ Prefab (
         (
             data: (
                 graphics: (
+                    transform: (
+                        scale: (1.0, 1.0, 1.0),
+                        translation: (0.0, 0.0, 0.0),
+                    ),
                     mesh: Shape((shape: Plane(None),)),
                     material: (
                         albedo: File("textures/player.png", Png, (channel: Srgb),),
