@@ -3,16 +3,20 @@ Prefab (
     entities: [
         (
             data: (
-                graphics: (
-                    transform: (
-                        scale: (1.0, 1.0, 1.0),
-                        translation: (0.0, 0.0, 0.0),
-                    ),
-                    mesh: Shape((shape: Plane(None),)),
-                    material: (
-                        albedo: File("textures/player.png", Png, (channel: Srgb),),
-                    ),
+                name: Named(name: "player"),
+                transform: (
+                    scale: (1.0, 1.0, 1.0),
+                    translation: (0.0, 0.0, -10.0),
                 ),
+                mesh: Shape((shape: Plane(None),)),
+                material: (
+                    albedo: Generate(Srgba(1.0, 0.3, 0.3, 1.0)),
+                ),
+                
+                //mesh: Shape((shape: Plane(None),)),
+                //material: (
+                 //   albedo: Generate(Srgba(1.0, 0.3, 0.3, 1.0)),
+                //),
             ),
         ),
     ],

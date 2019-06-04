@@ -1,14 +1,9 @@
-use std::path::PathBuf;
 use amethyst::{
-    assets::{
-        Handle,
-        Asset,
-        ProcessingState,
-    },
-    error::Error,
+    assets::{Asset, Handle, ProcessingState},
     ecs::VecStorage,
+    error::Error,
 };
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq, Eq)]
 pub struct GameConfig {

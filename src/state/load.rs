@@ -1,12 +1,6 @@
 use amethyst::{
+    assets::{AssetStorage, Handle, Loader, ProgressCounter, RonFormat},
     prelude::*,
-    assets::{
-        Handle,
-        Loader,
-        RonFormat,
-        ProgressCounter,
-        AssetStorage,
-    }
 };
 
 use crate::asset::config::GameConfig;
@@ -35,10 +29,7 @@ impl SimpleState for LoadConfigState {
         self.config_handle = Some(config_handle);
     }
 
-    fn update(
-        &mut self,
-        _data: &mut StateData<'_, GameData<'_, '_>>,
-    ) -> SimpleTrans {
+    fn update(&mut self, _data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
         if self.progress.is_complete() {
             Trans::Switch(Box::new(LoadState {
                 config_handle: Some(self.config_handle.take().unwrap()),
@@ -59,13 +50,13 @@ pub struct LoadState {
 impl SimpleState for LoadState {
     fn on_start(&mut self, mut data: StateData<'_, GameData<'_, '_>>) {
         // initialize the prefab resource
-        self.prefab_progress = Some(initialize_prefabs(&mut data.world, self.config_handle.clone().unwrap()));
+        self.prefab_progress = Some(initialize_prefabs(
+            &mut data.world,
+            self.config_handle.clone().unwrap(),
+        ));
     }
 
-    fn update(
-        &mut self,
-        data: &mut StateData<'_, GameData<'_, '_>>,
-    ) -> SimpleTrans {
+    fn update(&mut self, data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
         // check to see if our prefabs are done loading
         if let Some(ref counter) = self.prefab_progress.as_ref() {
             if counter.is_complete() {
@@ -73,7 +64,7 @@ impl SimpleState for LoadState {
                 self.prefab_progress = None;
                 update_prefabs(&mut data.world);
                 // Create a new main state now that our resource is full of prefabs
-                return Trans::Switch(Box::new(MainGameState{}));
+                return Trans::Switch(Box::new(MainGameState {}));
             }
         }
         Trans::None

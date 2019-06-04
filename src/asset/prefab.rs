@@ -1,11 +1,4 @@
-use amethyst::{
-    prelude::*,
-    utils::application_root_dir,
-    assets::{AssetPrefab, PrefabData, Handle, Prefab, ProgressCounter, PrefabLoader, RonFormat, AssetStorage, Loader},
-    core::{Transform, Named},
-    gltf::{GltfSceneAsset, GltfSceneFormat},
-    ecs::{prelude::*, Read, Write},
-};
+use crate::asset::config::GameConfig;
 use amethyst::renderer::{
     camera::CameraPrefab,
     formats::{mesh::MeshPrefab, mtl::MaterialPrefab},
@@ -17,16 +10,35 @@ use amethyst::renderer::{
     },
     transparent::Transparent,
 };
+use amethyst::{
+    animation::AnimationSetPrefab,
+    assets::{
+        AssetPrefab, AssetStorage, Handle, Prefab, PrefabData, PrefabLoader, ProgressCounter,
+        RonFormat,
+    },
+    controls::ControlTagPrefab,
+    core::{
+        ecs::Component,
+        ecs::DenseVecStorage,
+        ecs::Entity,
+        ecs::{Read, WriteStorage},
+        Named, Transform,
+    },
+    gltf::{GltfSceneAsset, GltfSceneFormat},
+    prelude::*,
+    utils::tag::Tag,
+    Error,
+};
+
+use amethyst::derive::PrefabData;
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::fs::read_dir;
-use crate::asset::config::GameConfig;
 type GenMeshVertex = (Vec<Position>, Vec<Normal>, Vec<Tangent>, Vec<TexCoord>);
 
 // This is the main prefab data for everything.
 // Only define the ones you want to add to your entity.
-#[derive(Default, Deserialize, Serialize)]
-#[serde(default)]
+#[derive(Deserialize, Serialize, PrefabData)]
 #[serde(deny_unknown_fields)]
 pub struct EntityPrefabData {
     pub name: Option<Named>,
@@ -44,11 +56,7 @@ pub struct EntityPrefabs {
 }
 
 impl EntityPrefabs {
-    pub fn insert(
-        &mut self,
-        entity_type: String,
-        prefab_handle: Handle<Prefab<EntityPrefabData>>,
-    ) {
+    pub fn insert(&mut self, entity_type: String, prefab_handle: Handle<Prefab<EntityPrefabData>>) {
         self.prefabs.insert(entity_type, prefab_handle);
     }
 
@@ -65,7 +73,7 @@ impl EntityPrefabs {
     }
 }
 
-// Here we load all prefabs 
+// Here we load all prefabs
 // These prefabs are then stored in a resource of type EntityPrefabs that is used by the spawner system.
 // At initialization time, we put temporary keys for the prefabs since they're not loaded yet.
 // When their loading is finished, we read the name of the entity inside to change the keys. This is done in the update_prefabs function.
@@ -74,9 +82,7 @@ pub fn initialize_prefabs(world: &mut World, config_handle: Handle<GameConfig>) 
         Read<'a, AssetStorage<GameConfig>>,
         PrefabLoader<'a, EntityPrefabData>,
     );
-    let (progress, prefabs) = world.exec(|
-        (config_storage, loader): Data
-    |{
+    let (progress, prefabs) = world.exec(|(config_storage, loader): Data| {
         let config = &config_storage.get(&config_handle.clone()).unwrap();
         let mut prefabs = EntityPrefabs::default();
         let mut progress_counter = ProgressCounter::new();
@@ -84,11 +90,7 @@ pub fn initialize_prefabs(world: &mut World, config_handle: Handle<GameConfig>) 
         // loop over and load all of our prefabs
         let prefab_iter = {
             config.prefabs.iter().map(|prefab_path| {
-                loader.load(
-                    prefab_path.clone(),
-                    RonFormat,
-                    &mut progress_counter,
-                )
+                loader.load(prefab_path.clone(), RonFormat, &mut progress_counter)
             })
         };
 
@@ -111,8 +113,7 @@ pub fn update_prefabs(world: &mut World) {
     let updated_prefabs = {
         let creature_prefabs = world.read_resource::<EntityPrefabs>();
         let prefabs = creature_prefabs.get_prefabs();
-        let mut prefab_resource =
-            world.write_resource::<AssetStorage<Prefab<EntityPrefabData>>>();
+        let mut prefab_resource = world.write_resource::<AssetStorage<Prefab<EntityPrefabData>>>();
         let mut new_prefabs = HashMap::new();
         for (_, handle) in prefabs.iter() {
             if let Some(prefab) = prefab_resource.get_mut(handle) {

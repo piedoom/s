@@ -1,31 +1,57 @@
 //! Pong Tutorial 2
 
-mod state;
 mod asset;
+mod state;
 
+use crate::asset::config::GameConfig;
+use crate::asset::prefab::EntityPrefabData;
+use amethyst::renderer::{
+    camera::{ActiveCamera, Camera, Projection},
+    debug_drawing::DebugLines,
+    light::{Light, PointLight},
+    mtl::{Material, MaterialDefaults},
+    palette::{LinSrgba, Srgb, Srgba},
+    pass::{
+        DrawDebugLinesDesc, DrawFlat2DDesc, DrawFlat2DTransparentDesc, DrawFlatDesc,
+        DrawFlatTransparentDesc, DrawPbrDesc, DrawPbrTransparentDesc, DrawShadedDesc,
+        DrawShadedTransparentDesc, DrawSkyboxDesc,
+    },
+    rendy::{
+        factory::Factory,
+        graph::{
+            present::PresentNode,
+            render::{RenderGroupDesc, SubpassBuilder},
+            GraphBuilder,
+        },
+        hal::{
+            command::{ClearDepthStencil, ClearValue},
+            format::Format,
+            image,
+        },
+        mesh::{Normal, Position, Tangent, TexCoord},
+        texture::palette::load_from_linear_rgba,
+    },
+    resources::Tint,
+    shape::Shape,
+    sprite::{SpriteRender, SpriteSheet},
+    sprite_visibility::SpriteVisibilitySortingSystem,
+    system::{GraphCreator, RenderingSystem},
+    transparent::Transparent,
+    types::{Backend, DefaultBackend, Mesh, Texture},
+    visibility::{BoundingSphere, VisibilitySortingSystem},
+};
 use amethyst::{
-    assets::Processor,
+    assets::{
+        AssetLoaderSystemData, Completion, PrefabLoader, PrefabLoaderSystem, Processor,
+        ProgressCounter, RonFormat,
+    },
     core::TransformBundle,
     ecs::{ReadExpect, Resources, SystemData},
+    gltf::GltfSceneLoaderSystem,
     prelude::*,
-    renderer::{
-        pass::DrawFlat2DDesc,
-        rendy::{
-            factory::Factory,
-            graph::{
-                render::{RenderGroupDesc, SubpassBuilder},
-                GraphBuilder,
-            },
-            hal::{format::Format, image},
-        },
-        sprite::SpriteSheet,
-        types::DefaultBackend,
-        GraphCreator, RenderingSystem,
-    },
     utils::application_root_dir,
     window::{ScreenDimensions, Window, WindowBundle},
 };
-use crate::asset::config::GameConfig;
 use std::sync::Arc;
 
 fn main() -> amethyst::Result<()> {
@@ -33,8 +59,7 @@ fn main() -> amethyst::Result<()> {
 
     let app_path = application_root_dir()?;
     let assets_path = app_path.join("resources");
-    let display_config_path =
-        assets_path.join("config/display.ron");
+    let display_config_path = assets_path.join("config/display.ron");
 
     let game_data = GameDataBuilder::default()
         // The WindowBundle provides all the scaffolding for opening a window and drawing to it
@@ -43,27 +68,44 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(TransformBundle::new())?
         // A Processor system is added to handle loading spritesheets.
         .with(
+            VisibilitySortingSystem::new(),
+            "visibility_system",
+            &["transform_system"],
+        )
+        .with(
+            PrefabLoaderSystem::<EntityPrefabData>::default(),
+            "prefab_loader",
+            &[],
+        )
+        .with(
+            GltfSceneLoaderSystem::default(),
+            "gltf_loader",
+            &["prefab_loader"], // This is important so that entity instantiation is performed in a single frame.
+        )
+        .with(
             Processor::<SpriteSheet>::new(),
             "sprite_sheet_processor",
             &[],
         )
+        .with(
+            SpriteVisibilitySortingSystem::new(),
+            "sprite_visibility_system",
+            &["transform_system"],
+        )
         .with(Processor::<GameConfig>::new(), "config_processor", &[])
         // The renderer must be executed on the same thread consecutively, so we initialize it as thread_local
         // which will always execute on the main thread.
-        .with_thread_local(RenderingSystem::<DefaultBackend, _>::new(
-            Graph::default(),
-        ));
+        .with_thread_local(RenderingSystem::<DefaultBackend, _>::new(Graph::default()));
 
-    let mut game = Application::new(assets_path, state::load::LoadConfigState::default(), game_data)?;
+    let mut game = Application::new(
+        assets_path,
+        state::load::LoadConfigState::default(),
+        game_data,
+    )?;
     game.run();
     Ok(())
 }
 
-// This graph structure is used for creating a proper `RenderGraph` for rendering.
-// A renderGraph can be thought of as the stages during a render pass. In our case,
-// we are only executing one subpass (DrawFlat2D, or the sprite pass). This graph
-// also needs to be rebuilt whenever the window is resized, so the boilerplate code
-// for that operation is also here.
 #[derive(Default)]
 struct Graph {
     dimensions: Option<ScreenDimensions>,
@@ -71,10 +113,7 @@ struct Graph {
     dirty: bool,
 }
 
-impl GraphCreator<DefaultBackend> for Graph {
-    // This trait method reports to the renderer if the graph must be rebuilt, usually because
-    // the window has been resized. This implementation checks the screen size and returns true
-    // if it has changed.
+impl<B: Backend> GraphCreator<B> for Graph {
     fn rebuild(&mut self, res: &Resources) -> bool {
         // Rebuild when dimensions change, but wait until at least two frames have the same.
         let new_dimensions = res.try_fetch::<ScreenDimensions>();
@@ -87,34 +126,26 @@ impl GraphCreator<DefaultBackend> for Graph {
         return self.dirty;
     }
 
-    // This is the core of a RenderGraph, which is building the actual graph with subpasses and target
-    // images.
-    fn builder(
-        &mut self,
-        factory: &mut Factory<DefaultBackend>,
-        res: &Resources,
-    ) -> GraphBuilder<DefaultBackend, Resources> {
-        use amethyst::renderer::rendy::{
-            graph::present::PresentNode,
-            hal::command::{ClearDepthStencil, ClearValue},
-        };
-
+    fn builder(&mut self, factory: &mut Factory<B>, res: &Resources) -> GraphBuilder<B, Resources> {
         self.dirty = false;
 
-        // Retrieve a reference to the target window, which is created by the WindowBundle
-        let window = <ReadExpect<'_, Arc<Window>>>::fetch(res);
+        let window = <(ReadExpect<'_, Arc<Window>>)>::fetch(res);
 
-        // Create a new drawing surface in our window
         let surface = factory.create_surface(&window);
+
         // cache surface format to speed things up
         let surface_format = *self
             .surface_format
             .get_or_insert_with(|| factory.get_surface_format(&surface));
-        let dimensions = self.dimensions.as_ref().unwrap();
-        let window_kind =
-            image::Kind::D2(dimensions.width() as u32, dimensions.height() as u32, 1, 1);
 
-        // Begin building our RenderGraph
+        let dimensions = self.dimensions.as_ref().unwrap();
+        let window_kind = image::Kind::D2(
+            dbg!(dimensions.width()) as u32,
+            dimensions.height() as u32,
+            1,
+            1,
+        );
+
         let mut graph_builder = GraphBuilder::new();
         let color = graph_builder.create_image(
             window_kind,
@@ -130,19 +161,45 @@ impl GraphCreator<DefaultBackend> for Graph {
             Some(ClearValue::DepthStencil(ClearDepthStencil(1.0, 0))),
         );
 
-        // Create our single `Subpass`, which is the DrawFlat2D pass.
-        // We pass the subpass builder a description of our pass for construction
-        let sprite = graph_builder.add_node(
-            SubpassBuilder::new()
+        let mut opaque_subpass = SubpassBuilder::new();
+        let mut transparent_subpass = SubpassBuilder::new();
+
+        opaque_subpass.add_group(DrawPbrDesc::skinned().builder());
+        transparent_subpass.add_group(DrawPbrTransparentDesc::skinned().builder());
+
+        let opaque = graph_builder.add_node(
+            opaque_subpass
                 .with_group(DrawFlat2DDesc::new().builder())
+                .with_group(DrawDebugLinesDesc::new().builder())
+                .with_group(
+                    DrawSkyboxDesc::with_colors(
+                        Srgb::new(0.82, 0.51, 0.50),
+                        Srgb::new(0.18, 0.11, 0.85),
+                    )
+                    .builder(),
+                )
                 .with_color(color)
                 .with_depth_stencil(depth)
                 .into_pass(),
         );
 
-        // Finally, add the pass to the graph
-        let _present = graph_builder
-            .add_node(PresentNode::builder(factory, surface, color).with_dependency(sprite));
+        let transparent = graph_builder.add_node(
+            transparent_subpass
+                .with_group(
+                    DrawFlat2DTransparentDesc::default()
+                        .builder()
+                        .with_dependency(opaque),
+                )
+                .with_color(color)
+                .with_depth_stencil(depth)
+                .into_pass(),
+        );
+
+        let _present = graph_builder.add_node(
+            PresentNode::builder(factory, surface, color)
+                .with_dependency(opaque)
+                .with_dependency(transparent),
+        );
 
         graph_builder
     }
