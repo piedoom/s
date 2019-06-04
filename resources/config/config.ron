@@ -1,0 +1,5 @@
+(
+    prefabs: (
+        player: "prefabs/player.ron",
+    )
+)
