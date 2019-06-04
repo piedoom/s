@@ -1,8 +1,8 @@
 use crate::asset::config::GameConfig;
 use amethyst::renderer::{
+    light::LightPrefab,
     camera::CameraPrefab,
     formats::{mesh::MeshPrefab, mtl::MaterialPrefab},
-    light::LightPrefab,
     rendy::mesh::{Normal, Position, Tangent, TexCoord},
     sprite::{
         prefab::{SpriteRenderPrefab, SpriteSheetPrefab},
@@ -47,6 +47,7 @@ pub struct EntityPrefabData {
     gltf: Option<AssetPrefab<GltfSceneAsset, GltfSceneFormat>>,
     camera: Option<CameraPrefab>,
     transform: Option<Transform>,
+    light: Option<LightPrefab>,
 }
 
 /// Contains a map of every possible entity we can spawn

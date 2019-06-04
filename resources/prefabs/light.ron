@@ -1,0 +1,21 @@
+#![enable(implicit_some)]
+Prefab (
+    entities: [
+        (
+            data: (
+                name: Named(name: "point_light"),
+                transform: (
+                    translation: (0.0, 0.0, -5.0),
+                ),
+                light: (
+                    light: Point((
+                        color: Srgb(0.5, 0.5, 0.5),
+                        intensity: 10.0,
+                        radius: 100.0,
+                        smoothness: 4.0,
+                    ))
+                ),
+            ),
+        ),
+    ],
+)

@@ -30,7 +30,12 @@ impl SimpleState for MainGameState {
             let prefabs = world.read_resource::<EntityPrefabs>();
             prefabs.get_prefab("player").unwrap().clone()
         };
+        let light = {
+            let prefabs = world.read_resource::<EntityPrefabs>();
+            prefabs.get_prefab("point_light").unwrap().clone()
+        };
 
         world.create_entity().with(player.clone()).build();
+        world.create_entity().with(light.clone()).build();
     }
 }
