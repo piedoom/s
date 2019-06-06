@@ -1,8 +1,8 @@
-use crate::asset::config::GameConfig;
+use crate::assets::config::GameConfig;
 use amethyst::renderer::{
-    light::LightPrefab,
     camera::CameraPrefab,
     formats::{mesh::MeshPrefab, mtl::MaterialPrefab},
+    light::LightPrefab,
     rendy::mesh::{Normal, Position, Tangent, TexCoord},
     sprite::{
         prefab::{SpriteRenderPrefab, SpriteSheetPrefab},

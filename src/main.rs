@@ -1,77 +1,76 @@
 //! Pong Tutorial 2
 
-mod asset;
-mod state;
+mod assets;
+mod components;
+mod data;
+mod states;
+mod systems;
 
-use crate::asset::config::GameConfig;
-use crate::asset::prefab::EntityPrefabData;
-use amethyst::renderer::{
-    camera::{ActiveCamera, Camera, Projection},
-    debug_drawing::DebugLines,
-    light::{Light, PointLight},
-    mtl::{Material, MaterialDefaults},
-    palette::{LinSrgba, Srgb, Srgba},
-    pass::{
-        DrawDebugLinesDesc, DrawFlat2DDesc, DrawFlat2DTransparentDesc, DrawFlatDesc,
-        DrawFlatTransparentDesc, DrawPbrDesc, DrawPbrTransparentDesc, DrawShadedDesc,
-        DrawShadedTransparentDesc, DrawSkyboxDesc,
-    },
-    rendy::{
-        factory::Factory,
-        graph::{
-            present::PresentNode,
-            render::{RenderGroupDesc, SubpassBuilder},
-            GraphBuilder,
-        },
-        hal::{
-            command::{ClearDepthStencil, ClearValue},
-            format::Format,
-            image,
-        },
-        mesh::{Normal, Position, Tangent, TexCoord},
-        texture::palette::load_from_linear_rgba,
-    },
-    resources::Tint,
-    shape::Shape,
-    sprite::{SpriteRender, SpriteSheet},
-    sprite_visibility::SpriteVisibilitySortingSystem,
-    system::{GraphCreator, RenderingSystem},
-    transparent::Transparent,
-    types::{Backend, DefaultBackend, Mesh, Texture},
-    visibility::{BoundingSphere, VisibilitySortingSystem},
-};
+use crate::systems as s;
+use crate::assets::config::GameConfig;
+use crate::assets::prefab::EntityPrefabData;
+
 use amethyst::{
-    assets::{
-        AssetLoaderSystemData, Completion, PrefabLoader, PrefabLoaderSystem, Processor,
-        ProgressCounter, RonFormat,
+    animation::{
+        get_animation_set, AnimationBundle, AnimationCommand, AnimationControlSet, AnimationSet,
+        EndControl, VertexSkinningBundle,
     },
+    core::transform::Transform,
+    assets::{PrefabLoaderSystem, Processor},
     core::TransformBundle,
     ecs::{ReadExpect, Resources, SystemData},
     gltf::GltfSceneLoaderSystem,
+    input::InputBundle,
     prelude::*,
+    renderer::{
+        palette::Srgb,
+        pass::{
+            DrawDebugLinesDesc, DrawFlat2DDesc, DrawFlat2DTransparentDesc, DrawFlatDesc,
+            DrawPbrDesc, DrawPbrTransparentDesc, DrawShadedDesc, DrawSkyboxDesc,
+        },
+        rendy::{
+            factory::Factory,
+            graph::{
+                present::PresentNode,
+                render::{RenderGroupDesc, SubpassBuilder},
+                GraphBuilder,
+            },
+            hal::{
+                command::{ClearDepthStencil, ClearValue},
+                format::Format,
+                image,
+            },
+        },
+        sprite::SpriteSheet,
+        sprite_visibility::SpriteVisibilitySortingSystem,
+        system::{GraphCreator, RenderingSystem},
+        transparent::Transparent,
+        types::{Backend, DefaultBackend},
+        visibility::VisibilitySortingSystem,
+    },
     utils::application_root_dir,
     window::{ScreenDimensions, Window, WindowBundle},
 };
+use data::GameBindings;
 use std::sync::Arc;
 
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(Default::default());
 
     let app_path = application_root_dir()?;
-    let assets_path = app_path.join("resources");
-    let display_config_path = assets_path.join("config/display.ron");
+    let (assets_path, config_path) = (app_path.join("resources"), app_path.join("resources/config"));
 
     let game_data = GameDataBuilder::default()
         // The WindowBundle provides all the scaffolding for opening a window and drawing to it
-        .with_bundle(WindowBundle::from_config_path(display_config_path))?
+        .with_bundle(WindowBundle::from_config_path(
+            config_path.join("display.ron"),
+        ))?
         // Add the transform bundle which handles tracking entity positions
         .with_bundle(TransformBundle::new())?
-        // A Processor system is added to handle loading spritesheets.
-        .with(
-            VisibilitySortingSystem::new(),
-            "visibility_system",
-            &["transform_system"],
-        )
+        .with_bundle(
+            InputBundle::<GameBindings>::new()
+                .with_bindings_from_file(config_path.join("bindings.ron"))?,
+        )?
         .with(
             PrefabLoaderSystem::<EntityPrefabData>::default(),
             "prefab_loader",
@@ -81,6 +80,20 @@ fn main() -> amethyst::Result<()> {
             GltfSceneLoaderSystem::default(),
             "gltf_loader",
             &["prefab_loader"], // This is important so that entity instantiation is performed in a single frame.
+        )
+        .with_bundle(
+            AnimationBundle::<usize, Transform>::new("animation_control", "sampler_interpolation")
+                .with_dep(&["gltf_loader"]),
+        )?
+        .with_bundle(VertexSkinningBundle::new().with_dep(&[
+            "transform_system",
+            "animation_control",
+            "sampler_interpolation",
+        ]))?
+        .with(
+            VisibilitySortingSystem::new(),
+            "visibility_system",
+            &["transform_system"],
         )
         .with(
             Processor::<SpriteSheet>::new(),
@@ -93,13 +106,23 @@ fn main() -> amethyst::Result<()> {
             &["transform_system"],
         )
         .with(Processor::<GameConfig>::new(), "config_processor", &[])
+        .with(
+            s::InputSystem::default(),
+            "game_input_system",
+            &[],
+        )
+        .with(
+            s::ControllerSystem::default(),
+            "controller_system",
+            &["game_input_system"],
+        )
         // The renderer must be executed on the same thread consecutively, so we initialize it as thread_local
         // which will always execute on the main thread.
         .with_thread_local(RenderingSystem::<DefaultBackend, _>::new(Graph::default()));
 
     let mut game = Application::new(
         assets_path,
-        state::load::LoadConfigState::default(),
+        states::load::LoadConfigState::default(),
         game_data,
     )?;
     game.run();

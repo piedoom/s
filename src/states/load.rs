@@ -3,9 +3,9 @@ use amethyst::{
     prelude::*,
 };
 
-use crate::asset::config::GameConfig;
-use crate::asset::prefab::{initialize_prefabs, update_prefabs};
-use crate::state::main::MainGameState;
+use crate::assets::config::GameConfig;
+use crate::assets::prefab::{initialize_prefabs, update_prefabs};
+use crate::states::main::MainGameState;
 /// The hard-coded path of the parent configuration
 const CONFIG_PATH: &'static str = "config/config.ron";
 
