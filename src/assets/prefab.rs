@@ -24,17 +24,17 @@ use amethyst::{
         ecs::{Read, WriteStorage},
         Named, Transform,
     },
+    derive::PrefabData,
     gltf::{GltfSceneAsset, GltfSceneFormat},
     prelude::*,
     utils::tag::Tag,
     Error,
 };
 
-use amethyst::derive::PrefabData;
-
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 type GenMeshVertex = (Vec<Position>, Vec<Normal>, Vec<Tangent>, Vec<TexCoord>);
+use crate::components as c;
 
 // This is the main prefab data for everything.
 // Only define the ones you want to add to your entity.
@@ -48,6 +48,8 @@ pub struct EntityPrefabData {
     camera: Option<CameraPrefab>,
     transform: Option<Transform>,
     light: Option<LightPrefab>,
+    player: Option<c::Player>,
+    controller: Option<c::Controller>,
 }
 
 /// Contains a map of every possible entity we can spawn

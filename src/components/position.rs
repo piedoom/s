@@ -1,6 +1,7 @@
 use specs_physics::bodies as b;
 use amethyst::ecs::prelude::*;
 
+#[derive(Default)]
 pub struct Position {
     x: f32,
     y: f32,
@@ -9,6 +10,14 @@ pub struct Position {
 
 impl Component for Position {
     type Storage = FlaggedStorage<Self, DenseVecStorage<Self>>;
+}
+
+impl Position {
+    pub fn new(x: f32, y: f32, z: f32) -> Self {
+        Self {
+            x, y, z
+        }
+    }
 }
 
 impl b::Position<f32> for Position {

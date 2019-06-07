@@ -1,16 +1,14 @@
 use crate::assets::prefab::EntityPrefabs;
 use amethyst::prelude::*;
 use amethyst::{
-    core::math::{Vector3, Point3},
+    core::math::{Point3, Vector3},
     core::{Float, Transform},
     renderer::camera::{Camera, Projection},
 };
 use specs_physics::{
     bodies::{BodyStatus, Position},
     colliders::Shape,
-    physics_dispatcher,
-    PhysicsBodyBuilder,
-    PhysicsColliderBuilder,
+    physics_dispatcher, PhysicsBodyBuilder, PhysicsColliderBuilder,
 };
 
 use crate::components as c;
@@ -24,9 +22,6 @@ impl SimpleState for MainGameState {
         // initialize nphysics
         // create the dispatcher containing all relevant Systems; alternatively to using
         // the convenience function you can add all required Systems by hand
-        let mut dispatcher = physics_dispatcher::<f32, c::Position>();
-        dispatcher.setup(&mut world.res);
-
         let camera = world
             .create_entity()
             .with(Camera::from(Projection::perspective(
@@ -51,15 +46,11 @@ impl SimpleState for MainGameState {
             prefabs.get_prefab("point_light").unwrap().clone()
         };
 
-        let physics_body = PhysicsBodyBuilder::from(BodyStatus::Dynamic)
-            .velocity(Vector3::new(1.0f32, 1.0f32, 1.0f32))
-            .build();
-
-        world.create_entity()
+        world
+            .create_entity()
             .with(player.clone())
-            .with(physics_body)
+            //.with(PhysicsColliderBuilder::<f32>::from(Shape::Rectangle(1.0, 1.0, 1.0)).build())
             .build();
         world.create_entity().with(light.clone()).build();
-        dispatcher.dispatch(&world.res);
     }
 }

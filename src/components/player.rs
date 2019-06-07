@@ -1,8 +1,15 @@
-//! Simply marks something as a controller that can recieve input
-use amethyst::ecs::{Component, DenseVecStorage};
+use amethyst::{
+    assets::PrefabData,
+    error::Error,
+    derive::PrefabData,
+    ecs::{Component, DenseVecStorage, Entity, WriteStorage},
+};
+use serde::{Deserialize, Serialize};
 
-pub struct Player {
-}
+#[derive(Clone, Deserialize, Serialize, PrefabData, Default)]
+#[serde(default)]
+#[prefab(Component)]
+pub struct Player {}
 
 impl Component for Player {
     type Storage = DenseVecStorage<Self>;
