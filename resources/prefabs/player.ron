@@ -8,18 +8,12 @@ Prefab (
                     scale: (1.0, 1.0, 1.0),
                     translation: (0.0, 0.0, -10.0),
                 ),
-                mesh: Shape((shape: Plane(None),)),
-                material: (
-                    albedo: Generate(Srgba(1.0, 0.3, 0.3, 1.0)),
-                ),
+                gltf: File("models/ship.gltf", ()),
+                // material: (
+                //     albedo: Generate(Srgba(1.0, 0.3, 0.3, 1.0)),
+                // ),
                 player: Player(),
                 controller: Controller( turn_speed: 3.0, max_speed: 3.0, )
-                
-                
-                //mesh: Shape((shape: Plane(None),)),
-                //material: (
-                 //   albedo: Generate(Srgba(1.0, 0.3, 0.3, 1.0)),
-                //),
             ),
         ),
     ],

@@ -42,8 +42,23 @@ impl<'a> System<'a> for ControllerSystem {
 
             // If our input is 0, we're not changing our velocity.
             if controller.thrust_control != Float::from(0.) {
-                controller.velocity = Unit::new_normalize(
-                    controller.velocity.as_ref() + direction.scale(controller.thrust_control * controller.acceleration));
+                let mut new_velocity = controller.velocity.as_ref() + direction.scale(controller.thrust_control * controller.acceleration);
+                // cap the vector at 1
+                if new_velocity.x > Float::from(1.) {
+                    new_velocity.x = Float::from(1.);
+                }
+                if new_velocity.x < Float::from(-1.) {
+                    new_velocity.x = Float::from(-1.);
+                }
+                if new_velocity.y > Float::from(1.) {
+                    new_velocity.y = Float::from(1.);
+                }
+                if new_velocity.y < Float::from(-1.) {
+                    new_velocity.y = Float::from(-1.);
+                }
+
+                // We know the values are capped, so no need to check.
+                controller.velocity = Unit::new_unchecked(new_velocity);
             }
 
 

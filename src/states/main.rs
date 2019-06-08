@@ -46,11 +46,7 @@ impl SimpleState for MainGameState {
             prefabs.get_prefab("point_light").unwrap().clone()
         };
 
-        world
-            .create_entity()
-            .with(player.clone())
-            //.with(PhysicsColliderBuilder::<f32>::from(Shape::Rectangle(1.0, 1.0, 1.0)).build())
-            .build();
+        world.create_entity().with(player.clone()).build();
         world.create_entity().with(light.clone()).build();
     }
 }
