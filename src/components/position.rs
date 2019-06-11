@@ -1,5 +1,5 @@
-use specs_physics::bodies as b;
 use amethyst::ecs::prelude::*;
+use specs_physics::bodies as b;
 
 #[derive(Default)]
 pub struct Position {
@@ -14,9 +14,7 @@ impl Component for Position {
 
 impl Position {
     pub fn new(x: f32, y: f32, z: f32) -> Self {
-        Self {
-            x, y, z
-        }
+        Self { x, y, z }
     }
 }
 

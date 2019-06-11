@@ -6,17 +6,17 @@ mod data;
 mod states;
 mod systems;
 
-use crate::systems as s;
 use crate::assets::config::GameConfig;
 use crate::assets::prefab::EntityPrefabData;
+use crate::systems as s;
 
 use amethyst::{
     animation::{
         get_animation_set, AnimationBundle, AnimationCommand, AnimationControlSet, AnimationSet,
         EndControl, VertexSkinningBundle,
     },
-    core::transform::Transform,
     assets::{PrefabLoaderSystem, Processor},
+    core::transform::Transform,
     core::TransformBundle,
     ecs::{ReadExpect, Resources, SystemData},
     gltf::GltfSceneLoaderSystem,
@@ -58,7 +58,10 @@ fn main() -> amethyst::Result<()> {
     amethyst::start_logger(Default::default());
 
     let app_path = application_root_dir()?;
-    let (assets_path, config_path) = (app_path.join("resources"), app_path.join("resources/config"));
+    let (assets_path, config_path) = (
+        app_path.join("resources"),
+        app_path.join("resources/config"),
+    );
 
     let game_data = GameDataBuilder::default()
         // The WindowBundle provides all the scaffolding for opening a window and drawing to it
@@ -106,11 +109,7 @@ fn main() -> amethyst::Result<()> {
             &["transform_system"],
         )
         .with(Processor::<GameConfig>::new(), "config_processor", &[])
-        .with(
-            s::InputSystem::default(),
-            "game_input_system",
-            &[],
-        )
+        .with(s::InputSystem::default(), "game_input_system", &[])
         .with(
             s::ControllerSystem::default(),
             "controller_system",

@@ -1,5 +1,5 @@
 use crate::{
-    components::{Controller, Player},
+    components::{Controller, Player, Engine, Hull},
     data::Axis,
 };
 use amethyst::core::Time;
@@ -10,7 +10,7 @@ use amethyst::core::{
 use amethyst::ecs::{Join, Read, ReadStorage, System, WriteStorage};
 use amethyst::input::InputHandler;
 
-const UP: usize = 1;
+const UP: usize = 2;
 
 use crate::data::GameBindings;
 
@@ -21,28 +21,34 @@ impl<'a> System<'a> for ControllerSystem {
     type SystemData = (
         WriteStorage<'a, Controller>,
         WriteStorage<'a, Transform>,
+        ReadStorage<'a, Engine>,
+        ReadStorage<'a, Hull>,
         Read<'a, Time>,
         Read<'a, InputHandler<GameBindings>>,
     );
 
-    fn run(&mut self, (mut controllers, mut transforms, time, input): Self::SystemData) {
-        for (controller, transform) in (&mut controllers, &mut transforms).join() {
+    fn run(&mut self, (mut controllers, mut transforms, engines, hulls, time, input): Self::SystemData) {
+        for (controller, transform, engine, hull) in (&mut controllers, &mut transforms, &engines, &hulls).join() {
             // rotate based on unit points
-            transform.append_rotation_z_axis(
+            transform.append_rotation_y_axis(
                 // This will orient the rotation direction correctly
                 controller.rotation_control *
                 // Multiply by our turn speed, which is just a multiplier.
-                Float::from(controller.turn_speed) *
+                Float::from(engine.turn_speed) *
                 // Finally, multiply everything by our delta to keep consistent across framerates
                 Float::from(time.delta_seconds()),
             );
 
             let rotation = transform.isometry().inverse().rotation.to_homogeneous();
-            let direction = Unit::new_unchecked(Vector3::new(rotation.row(UP)[0], rotation.row(UP)[1], Float::from(0.)));
-
+            let direction = Unit::new_unchecked(Vector3::new(
+                rotation.row(UP)[0],
+                Float::from(0.0),
+                rotation.row(UP)[2],
+            ));
             // If our input is 0, we're not changing our velocity.
             if controller.thrust_control != Float::from(0.) {
-                let mut new_velocity = controller.velocity.as_ref() + direction.scale(controller.thrust_control * controller.acceleration);
+                let mut new_velocity = controller.velocity.as_ref()
+                    + direction.scale(controller.thrust_control * engine.traction);
                 // cap the vector at 1
                 if new_velocity.x > Float::from(1.) {
                     new_velocity.x = Float::from(1.);
@@ -50,23 +56,22 @@ impl<'a> System<'a> for ControllerSystem {
                 if new_velocity.x < Float::from(-1.) {
                     new_velocity.x = Float::from(-1.);
                 }
-                if new_velocity.y > Float::from(1.) {
-                    new_velocity.y = Float::from(1.);
+                if new_velocity.z > Float::from(1.) {
+                    new_velocity.z = Float::from(1.);
                 }
-                if new_velocity.y < Float::from(-1.) {
-                    new_velocity.y = Float::from(-1.);
+                if new_velocity.z < Float::from(-1.) {
+                    new_velocity.z = Float::from(-1.);
                 }
 
                 // We know the values are capped, so no need to check.
                 controller.velocity = Unit::new_unchecked(new_velocity);
             }
 
-
             // Finally, actually transform, multiplying by our max speed and delta
             transform.prepend_translation(
                 controller
                     .velocity
-                    .scale(controller.max_speed * Float::from(time.delta_seconds())),
+                    .scale(hull.max_speed * Float::from(time.delta_seconds())),
             );
         }
     }

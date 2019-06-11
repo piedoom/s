@@ -1,5 +1,5 @@
-mod input;
 mod controller;
+mod input;
 
-pub use input::InputSystem;
 pub use controller::ControllerSystem;
+pub use input::InputSystem;

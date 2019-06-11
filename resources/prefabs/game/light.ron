@@ -3,15 +3,15 @@ Prefab (
     entities: [
         (
             data: (
-                name: Named(name: "point_light"),
+                name: Named(name: "game::light"),
                 transform: (
-                    translation: (0.0, 0.0, -5.0),
+                    translation: (0.0, 10.0, 0.0),
                 ),
                 light: (
                     light: Point((
                         color: Srgb(0.5, 0.5, 0.5),
                         intensity: 10.0,
-                        radius: 100.0,
+                        radius: 1000.0,
                         smoothness: 4.0,
                     ))
                 ),

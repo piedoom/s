@@ -1,0 +1,16 @@
+#![enable(implicit_some)]
+Prefab (
+    entities: [
+        (
+            data: (
+                name: Named(name: "items::hulls::default"),
+                gltf: File("models/ship.gltf", ()),
+                hull: Hull(
+                    weight: 100,
+                    inventory_space: 100,
+                    max_speed: 7.0,
+                ),
+            ),
+        ),
+    ],
+)

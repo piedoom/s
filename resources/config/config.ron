@@ -1,3 +1,9 @@
 (
-    prefabs: [ "prefabs/player.ron", "prefabs/light.ron", ]
+    prefabs: [ 
+        "prefabs/game/player.ron", 
+        "prefabs/game/light.ron", 
+        "prefabs/game/camera.ron",
+        "prefabs/items/engines/default.ron",
+        "prefabs/items/hulls/default.ron",
+        ]
 )

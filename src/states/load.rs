@@ -32,7 +32,7 @@ impl SimpleState for LoadConfigState {
     fn update(&mut self, _data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
         if self.progress.is_complete() {
             Trans::Switch(Box::new(LoadState {
-                config_handle: Some(self.config_handle.take().unwrap()),
+                config_handle: Some(self.config_handle.take().expect("Config handle errored during transition.")),
                 ..LoadState::default()
             }))
         } else {
@@ -52,7 +52,7 @@ impl SimpleState for LoadState {
         // initialize the prefab resource
         self.prefab_progress = Some(initialize_prefabs(
             &mut data.world,
-            self.config_handle.clone().unwrap(),
+            self.config_handle.clone().expect("Could not clone `config_handle` in `LoadState`."),
         ));
     }
 

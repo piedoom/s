@@ -3,12 +3,8 @@ use crate::{
     data::Axis,
 };
 use amethyst::core::{
-    Transform,
-    Float,
-    math::{
-        Point2,
-        Unit,
-    }
+    math::{Point2, Unit},
+    Float, Transform,
 };
 use amethyst::ecs::{Join, Read, ReadStorage, System, WriteStorage};
 use amethyst::input::InputHandler;
