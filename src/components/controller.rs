@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 #[prefab(Component)]
 pub struct Controller {
     /// Preserves current velocity
-    pub velocity: Unit<Vector3<Float>>,
+    pub velocity: Vector3<Float>,
     pub rotation_control: Float,
     pub thrust_control: Float,
     pub turn_speed: Float,
@@ -28,7 +28,7 @@ pub struct Controller {
 impl Default for Controller {
     fn default() -> Self {
         Self {
-            velocity: Unit::new_unchecked(Vector3::zeros()),
+            velocity: Vector3::zeros(),
             rotation_control: Float::from(0.0),
             thrust_control: Float::from(0.0),
             turn_speed: Float::from(1.0),

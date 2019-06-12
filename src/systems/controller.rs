@@ -37,40 +37,26 @@ impl<'a> System<'a> for ControllerSystem {
                 Float::from(time.delta_seconds()),
             );
 
-            let rotation = transform.isometry().inverse().rotation.to_homogeneous();
-            let direction = Unit::new_unchecked(Vector3::new(
-                rotation.row(UP)[0],
-                Float::from(0.0),
-                rotation.row(UP)[2],
-            ));
             // If our input is 0, we're not changing our velocity.
             if controller.thrust_control != Float::from(0.) {
-                let mut new_velocity = controller.velocity.as_ref()
-                    + direction.scale(controller.thrust_control * controller.traction);
-                // cap the vector at 1
-                if new_velocity.x > Float::from(1.) {
-                    new_velocity.x = Float::from(1.);
-                }
-                if new_velocity.x < Float::from(-1.) {
-                    new_velocity.x = Float::from(-1.);
-                }
-                if new_velocity.z > Float::from(1.) {
-                    new_velocity.z = Float::from(1.);
-                }
-                if new_velocity.z < Float::from(-1.) {
-                    new_velocity.z = Float::from(-1.);
-                }
+                let added_magnitude = Vector3::z().scale(controller.traction * Float::from(time.delta_seconds()) * controller.thrust_control);
+                let added_vector = transform.rotation() * added_magnitude;
+                
+                // change our velocity vector
+                controller.velocity += added_vector;
 
-                // We know the values are capped, so no need to check.
-                controller.velocity = Unit::new_unchecked(new_velocity);
+                // limit velocity.
+                let magnitude = controller.velocity.magnitude();
+                if magnitude > controller.max_speed {
+                    controller.velocity /= magnitude / controller.max_speed;
+                }
             }
 
-            // Finally, actually transform, multiplying by our max speed and delta
-            transform.prepend_translation(
-                controller
-                    .velocity
-                    .scale(controller.max_speed * Float::from(time.delta_seconds())),
-            );
+            // Apply existing velocity and rotational velocity.
+            let movement = controller.velocity.scale(Float::from(time.delta_seconds()));
+
+            // Finally, actually transform
+            transform.prepend_translation(movement);
         }
     }
 }
