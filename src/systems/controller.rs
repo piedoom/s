@@ -1,18 +1,10 @@
-use crate::{
-    components::{Controller, Player},
-    data::Axis,
-};
+use crate::components::Controller;
 use amethyst::core::Time;
 use amethyst::core::{
-    math::{Unit, Vector3},
+    math::Vector3,
     Float, Transform,
 };
-use amethyst::ecs::{Join, Read, ReadStorage, System, WriteStorage};
-use amethyst::input::InputHandler;
-
-const UP: usize = 2;
-
-use crate::data::GameBindings;
+use amethyst::ecs::{Join, Read, System, WriteStorage};
 
 #[derive(Default, Debug)]
 pub struct ControllerSystem;
@@ -22,10 +14,9 @@ impl<'a> System<'a> for ControllerSystem {
         WriteStorage<'a, Controller>,
         WriteStorage<'a, Transform>,
         Read<'a, Time>,
-        Read<'a, InputHandler<GameBindings>>,
     );
 
-    fn run(&mut self, (mut controllers, mut transforms, time, input): Self::SystemData) {
+    fn run(&mut self, (mut controllers, mut transforms, time): Self::SystemData) {
         for (controller, transform) in (&mut controllers, &mut transforms).join() {
             // rotate based on unit points
             transform.append_rotation_y_axis(
@@ -39,13 +30,14 @@ impl<'a> System<'a> for ControllerSystem {
 
             // If our input is 0, we're not changing our velocity.
             if controller.thrust_control != Float::from(0.) {
+                // Calculate impulse
                 let added_magnitude = Vector3::z().scale(controller.traction * Float::from(time.delta_seconds()) * controller.thrust_control);
                 let added_vector = transform.rotation() * added_magnitude;
                 
-                // change our velocity vector
+                // Change our velocity vector
                 controller.velocity += added_vector;
 
-                // limit velocity.
+                // Limit velocity
                 let magnitude = controller.velocity.magnitude();
                 if magnitude > controller.max_speed {
                     controller.velocity /= magnitude / controller.max_speed;

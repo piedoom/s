@@ -1,16 +1,42 @@
-use crate::{
-    components::{Controller, Player},
-    data::Axis,
-};
+use crate::components::{Controller, Player};
 use amethyst::core::{
     math::{Point2, Unit},
     Float, Transform,
 };
 use amethyst::ecs::{Join, Read, ReadStorage, System, WriteStorage};
 use amethyst::input::InputHandler;
+use amethyst::input::BindingTypes;
+use serde::{Deserialize, Serialize};
+use std::fmt;
 
-// You'll have to mark PADDLE_HEIGHT as public in pong.rs
-use crate::data::GameBindings;
+#[derive(Debug, Hash, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub enum Axis {
+    Horizontal,
+    Vertical,
+}
+
+#[derive(Debug, Hash, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub enum Action {
+    Fire,
+}
+
+impl fmt::Display for Axis {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", format!("{:?}", *self))
+    }
+}
+
+impl fmt::Display for Action {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", format!("{:?}", *self))
+    }
+}
+
+pub struct GameBindings;
+impl BindingTypes for GameBindings {
+    type Axis = Axis;
+    type Action = Action;
+}
 
 #[derive(Default, Debug)]
 pub struct InputSystem;

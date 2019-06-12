@@ -2,7 +2,6 @@
 
 mod assets;
 mod components;
-mod data;
 mod states;
 mod systems;
 
@@ -51,7 +50,7 @@ use amethyst::{
     utils::application_root_dir,
     window::{ScreenDimensions, Window, WindowBundle},
 };
-use data::GameBindings;
+use systems::input::GameBindings;
 use std::sync::Arc;
 
 fn main() -> amethyst::Result<()> {
