@@ -50,8 +50,6 @@ pub struct EntityPrefabData {
     light: Option<LightPrefab>,
     player: Option<c::Player>,
     controller: Option<c::Controller>,
-    engine: Option<c::Engine>,
-    hull: Option<c::Hull>,
 }
 
 /// Contains a map of every possible entity we can spawn

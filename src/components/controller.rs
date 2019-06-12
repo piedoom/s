@@ -20,6 +20,9 @@ pub struct Controller {
     pub velocity: Unit<Vector3<Float>>,
     pub rotation_control: Float,
     pub thrust_control: Float,
+    pub turn_speed: Float,
+    pub traction: Float,
+    pub max_speed: Float,
 }
 
 impl Default for Controller {
@@ -28,6 +31,9 @@ impl Default for Controller {
             velocity: Unit::new_unchecked(Vector3::zeros()),
             rotation_control: Float::from(0.0),
             thrust_control: Float::from(0.0),
+            turn_speed: Float::from(1.0),
+            traction: Float::from(0.05),
+            max_speed: Float::from(10.0),
         }
     }
 }
