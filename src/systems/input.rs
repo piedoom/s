@@ -1,4 +1,4 @@
-use crate::components::{Controller, Player};
+use crate::components::{Controller, Player, weapon::WeaponManager};
 use amethyst::core::{
     math::{Point2, Unit},
     Float, Transform,
@@ -43,16 +43,23 @@ pub struct InputSystem;
 
 impl<'a> System<'a> for InputSystem {
     type SystemData = (
-        ReadStorage<'a, Player>,
+        WriteStorage<'a, Player>,
         WriteStorage<'a, Controller>,
+        WriteStorage<'a, WeaponManager>,
         Read<'a, InputHandler<GameBindings>>,
     );
 
-    fn run(&mut self, (players, mut controllers, input): Self::SystemData) {
+
+    fn run(&mut self, (mut players, mut controllers, mut managers, input): Self::SystemData) {
         // Loop through all players and assign direction
-        for (controller, _) in (&mut controllers, &players).join() {
+        for (controller, player) in (&mut controllers, &mut players).join() {
             controller.rotation_control = Float::from(input.axis_value(&Axis::Horizontal).unwrap());
             controller.thrust_control = Float::from(input.axis_value(&Axis::Vertical).unwrap());
+        }
+
+        // loop through all weapons systems and assign firing states
+        for (_, manager) in (&mut players, &mut managers).join() {
+            manager.wants_to_fire = input.action_is_down(&Action::Fire).expect("Error reading action");
         }
     }
 }

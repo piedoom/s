@@ -87,33 +87,15 @@ fn main() -> amethyst::Result<()> {
             AnimationBundle::<usize, Transform>::new("animation_control", "sampler_interpolation")
                 .with_dep(&["gltf_loader"]),
         )?
-        .with_bundle(VertexSkinningBundle::new().with_dep(&[
-            "transform_system",
-            "animation_control",
-            "sampler_interpolation",
-        ]))?
-        .with(
-            VisibilitySortingSystem::new(),
-            "visibility_system",
-            &["transform_system"],
-        )
-        .with(
-            Processor::<SpriteSheet>::new(),
-            "sprite_sheet_processor",
-            &[],
-        )
-        .with(
-            SpriteVisibilitySortingSystem::new(),
-            "sprite_visibility_system",
-            &["transform_system"],
-        )
+        .with_bundle(VertexSkinningBundle::new().with_dep(&["transform_system", "animation_control", "sampler_interpolation",]))?
+        .with(VisibilitySortingSystem::new(),"visibility_system", &["transform_system"],)
+        .with(Processor::<SpriteSheet>::new(),"sprite_sheet_processor", &[],)
+        .with(SpriteVisibilitySortingSystem::new(),"sprite_visibility_system", &["transform_system"],)
         .with(Processor::<GameConfig>::new(), "config_processor", &[])
+        // Custom systems
         .with(s::InputSystem::default(), "game_input_system", &[])
-        .with(
-            s::ControllerSystem::default(),
-            "controller_system",
-            &["game_input_system"],
-        )
+        .with(s::WeaponSystem::default(), "weapon_system", &["transform_system"])
+        .with(s::ControllerSystem::default(),"controller_system", &["game_input_system"],)
         // The renderer must be executed on the same thread consecutively, so we initialize it as thread_local
         // which will always execute on the main thread.
         .with_thread_local(RenderingSystem::<DefaultBackend, _>::new(Graph::default()));

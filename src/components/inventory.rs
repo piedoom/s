@@ -5,6 +5,3 @@ use amethyst::{
     ecs::{Component, DenseVecStorage, Entity, WriteStorage},
 };
 use serde::{Deserialize, Serialize};
-
-#[derive(Clone, Deserialize, Serialize, Default)]
-pub struct Inventory{ }

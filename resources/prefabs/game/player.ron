@@ -9,7 +9,14 @@ Prefab (
                 controller: Controller(
                     turn_speed: 3.0,
                     max_speed: 100.0,
-                    traction: 10.0,
+                    traction: 20.0,
+                ),
+                weapon_manager: WeaponManager(
+                    weapons: [
+                        Weapon(
+                            name: "Basic Weapon",
+                        ),
+                    ],
                 ),
                 gltf: File("models/ship.gltf", ()),
             ),
