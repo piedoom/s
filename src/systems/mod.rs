@@ -1,6 +1,6 @@
 mod controller;
-mod weapon;
 pub mod input;
+mod weapon;
 
 pub use controller::ControllerSystem;
 pub use input::InputSystem;

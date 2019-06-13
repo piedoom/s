@@ -1,9 +1,9 @@
 mod controller;
-mod player;
-mod position;
 mod engine;
 mod hull;
 mod inventory;
+mod player;
+mod position;
 pub mod weapon;
 
 pub use controller::Controller;

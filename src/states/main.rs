@@ -1,19 +1,18 @@
+use crate::assets::prefab::EntityPrefabData;
 use crate::assets::prefab::EntityPrefabs;
+use crate::components as c;
 use amethyst::prelude::*;
 use amethyst::{
-    assets::{Prefab, Handle},
+    assets::{Handle, Prefab},
     core::math::{Point3, Vector3},
     core::{Float, Transform},
     ecs::{Entities, Entity, Read, ReadExpect, WriteStorage},
-
 };
 use specs_physics::{
     bodies::{BodyStatus, Position},
     colliders::Shape,
     physics_dispatcher, PhysicsBodyBuilder, PhysicsColliderBuilder,
 };
-use crate::assets::prefab::EntityPrefabData;
-use crate::components as c;
 pub struct MainGameState {}
 
 impl SimpleState for MainGameState {

@@ -1,14 +1,9 @@
+use crate::components as c;
 use amethyst::core::{
-    Time,
-    Transform,
-    Float,
-    math::{
-        Vector3,
-        Unit,
-    }
+    math::{Unit, Vector3},
+    Float, Time, Transform,
 };
 use amethyst::ecs::{Join, Read, ReadStorage, System, WriteStorage};
-use crate::components as c;
 
 #[derive(Default, Debug)]
 pub struct WeaponSystem;
@@ -17,7 +12,7 @@ impl<'a> System<'a> for WeaponSystem {
     type SystemData = (
         WriteStorage<'a, c::weapon::WeaponManager>,
         ReadStorage<'a, Transform>,
-        Read<'a, Time>
+        Read<'a, Time>,
     );
 
     fn run(&mut self, (mut managers, transforms, time): Self::SystemData) {

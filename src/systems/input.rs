@@ -1,11 +1,11 @@
-use crate::components::{Controller, Player, weapon::WeaponManager};
+use crate::components::{weapon::WeaponManager, Controller, Player};
 use amethyst::core::{
     math::{Point2, Unit},
     Float, Transform,
 };
 use amethyst::ecs::{Join, Read, ReadStorage, System, WriteStorage};
-use amethyst::input::InputHandler;
 use amethyst::input::BindingTypes;
+use amethyst::input::InputHandler;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
@@ -49,7 +49,6 @@ impl<'a> System<'a> for InputSystem {
         Read<'a, InputHandler<GameBindings>>,
     );
 
-
     fn run(&mut self, (mut players, mut controllers, mut managers, input): Self::SystemData) {
         // Loop through all players and assign direction
         for (controller, player) in (&mut controllers, &mut players).join() {
@@ -59,7 +58,9 @@ impl<'a> System<'a> for InputSystem {
 
         // loop through all weapons systems and assign firing states
         for (_, manager) in (&mut players, &mut managers).join() {
-            manager.wants_to_fire = input.action_is_down(&Action::Fire).expect("Error reading action");
+            manager.wants_to_fire = input
+                .action_is_down(&Action::Fire)
+                .expect("Error reading action");
         }
     }
 }

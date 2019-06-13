@@ -1,9 +1,6 @@
 use crate::components::Controller;
 use amethyst::core::Time;
-use amethyst::core::{
-    math::Vector3,
-    Float, Transform,
-};
+use amethyst::core::{math::Vector3, Float, Transform};
 use amethyst::ecs::{Join, Read, System, WriteStorage};
 
 #[derive(Default, Debug)]
@@ -31,9 +28,13 @@ impl<'a> System<'a> for ControllerSystem {
             // If our input is 0, we're not changing our velocity.
             if controller.thrust_control != Float::from(0.) {
                 // Calculate impulse
-                let added_magnitude = Vector3::z().scale(controller.traction * Float::from(time.delta_seconds()) * controller.thrust_control);
+                let added_magnitude = Vector3::z().scale(
+                    controller.traction
+                        * Float::from(time.delta_seconds())
+                        * controller.thrust_control,
+                );
                 let added_vector = transform.rotation() * added_magnitude;
-                
+
                 // Change our velocity vector
                 controller.velocity += added_vector;
 

@@ -1,9 +1,9 @@
 use amethyst::{
     assets::PrefabData,
-    error::Error,
+    core::Float,
     derive::PrefabData,
     ecs::{Component, DenseVecStorage, Entity, WriteStorage},
-    core::Float,
+    error::Error,
 };
 use serde::{Deserialize, Serialize};
 
