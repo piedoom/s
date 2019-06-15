@@ -9,6 +9,8 @@ use serde::{Deserialize, Serialize};
 pub struct GameConfig {
     /// Path to all prefabs we want to load
     pub prefabs: Vec<String>,
+    /// Root path to models folder
+    pub models_path: String,
 }
 
 impl Asset for GameConfig {

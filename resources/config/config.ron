@@ -3,5 +3,6 @@
         "prefabs/game/player.ron", 
         "prefabs/game/light.ron", 
         "prefabs/game/camera.ron",
-        ]
+    ],
+    models_path: "",
 )

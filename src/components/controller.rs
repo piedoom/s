@@ -10,6 +10,7 @@ use amethyst::{
     error::Error,
 };
 use serde::{Deserialize, Serialize};
+use crate::components::weapon::Projectile;
 
 /// Controllers must contain hulls to function properly
 #[derive(Clone, Deserialize, Serialize, PrefabData)]
@@ -42,4 +43,14 @@ impl Component for Controller {
     type Storage = DenseVecStorage<Self>;
 }
 
-impl Controller {}
+impl Controller {
+    /// When we fire, we want to impart data from our projectile onto our controller
+    pub fn set_from_projectile(mut self, projectile: &Projectile) -> Self {
+        self.max_speed = projectile.max_speed;
+        self.traction = projectile.traction;
+        // Projectile should travel along continuously
+        self.thrust_control = Float::from(-1.0);
+        self.rotation_control = Float::from(0.0);
+        self
+    }
+}

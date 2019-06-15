@@ -18,6 +18,7 @@ pub struct MainGameState {}
 impl SimpleState for MainGameState {
     fn on_start(&mut self, mut data: StateData<'_, GameData<'_, '_>>) {
         let mut world = data.world;
+        world.register::<c::weapon::Projectile>();
 
         create_with_prefab(world, "game::camera");
         create_with_prefab(world, "game::light");

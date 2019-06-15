@@ -60,6 +60,8 @@ impl SimpleState for LoadState {
                 .clone()
                 .expect("Could not clone `config_handle` in `LoadState`."),
         ));
+        // initialize primitives resource
+        crate::assets::Primitives::initialize(&mut data.world);
     }
 
     fn update(&mut self, data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {

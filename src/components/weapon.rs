@@ -1,6 +1,6 @@
 use amethyst::{
     assets::PrefabData,
-    core::Float,
+    core::{math::Vector3, Float},
     derive::PrefabData,
     ecs::{Component, DenseVecStorage, Entity, WriteStorage},
     error::Error,
@@ -14,11 +14,13 @@ use std::time::Duration;
 pub struct Weapon {
     name: String,
     /// Speed the projectile will travel
-    velocity: Float,
+    speed: Float,
     /// Time taken between consecutive shots
     pub recoil: Duration,
     /// Absolute time that weapon was last fired
     pub last_fired: Duration,
+    /// Component that will be attached to this weapon
+    pub projectile: Projectile,
 }
 
 impl Component for Weapon {
@@ -29,9 +31,10 @@ impl Default for Weapon {
     fn default() -> Self {
         Self {
             name: String::from("Weapon"),
-            velocity: Float::from(10.),
-            recoil: Duration::from_secs(1),
+            speed: Float::from(10.),
+            recoil: Duration::from_millis(250),
             last_fired: Duration::from_secs(0),
+            projectile: Projectile::default(),
         }
     }
 }
@@ -42,6 +45,27 @@ impl Weapon {
         self.name = name;
         self
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+pub struct Projectile {
+    pub max_speed: Float,
+    pub traction: Float,
+}
+
+impl Projectile {}
+
+impl Default for Projectile {
+    fn default() -> Self {
+        Self {
+            max_speed: Float::from(10.0),
+            traction: Float::from(10.0),
+        }
+    }
+}
+
+impl Component for Projectile {
+    type Storage = DenseVecStorage<Self>;
 }
 
 /// A weapon manager references weapons that are currently in the inventory. It switches active weapon and also
