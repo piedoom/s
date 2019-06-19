@@ -8,8 +8,8 @@ Prefab (
                 transform: Transform(),
                 controller: Controller(
                     turn_speed: 3.0,
-                    max_speed: 100.0,
-                    traction: 20.0,
+                    max_speed: 1000.0,
+                    traction: 500.0,
                 ),
                 weapon_manager: WeaponManager(
                     weapons: [
@@ -18,7 +18,21 @@ Prefab (
                         ),
                     ],
                 ),
-                gltf: File("models/ship.gltf", ()),
+                sprite_sheet: Sheet(
+                    texture: File("textures/player.png", ("IMAGE", ())),
+                    sprites: [
+                        List((
+                            texture_width: 64,
+                            texture_height: 64,
+                            sprites: [(x: 0,   y: 0, width: 64, height: 64)],
+                        )),
+                    ],
+                    name: "player",
+                ),
+                sprite: (
+                    sheet: "player",
+                    sprite_number: 0,
+                ),
             ),
         ),
     ],

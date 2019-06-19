@@ -1,13 +1,10 @@
+use crate::assets::prefab::EntityPrefabs;
 use crate::components as c;
 use amethyst::core::{
     math::{Unit, Vector3},
     Float, Time, Transform,
 };
-use amethyst::ecs::{Entities, Join, Read, System, WriteStorage, prelude::*, world::LazyUpdate};
-use crate::assets::{
-    prefab::EntityPrefabs,
-    Primitives,
-};
+use amethyst::ecs::{prelude::*, world::LazyUpdate, Entities, Join, Read, System, WriteStorage};
 
 #[derive(Default, Debug)]
 pub struct WeaponSystem;
@@ -20,12 +17,11 @@ impl<'a> System<'a> for WeaponSystem {
         WriteStorage<'a, c::Controller>,
         WriteStorage<'a, Transform>,
         Read<'a, Time>,
-        Read<'a, Primitives>,
     );
 
     fn run(
         &mut self,
-        (entities, lazy, mut managers, mut controllers, mut transforms, time, primitives): Self::SystemData,
+        (entities, lazy, mut managers, mut controllers, mut transforms, time): Self::SystemData,
     ) {
         let controllers_looper = &mut controllers;
         // Loop through all players and assign direction to their controller
@@ -53,14 +49,12 @@ impl<'a> System<'a> for WeaponSystem {
                             Float::from(0.1),
                         ));
 
-                        lazy
-                            .create_entity(&entities)
+                        lazy.create_entity(&entities)
                             .with(projectile.clone())
                             .with(projectile_transform)
                             .with(controller.clone().set_from_projectile(&projectile))
-                            .with(primitives.meshes.get("sphere").expect("Sphere not found").clone())
-                            .with(primitives.materials.get("default").expect("Default material not found").clone())
-                            .build();                    
+                            // not currently rendering anything
+                            .build();
                     }
                 }
             }

@@ -5,6 +5,6 @@ authors = []
 edition = "2018"
 
 [dependencies]
-amethyst = { git = "https://github.com/amethyst/amethyst", features = ["nightly", "vulkan", "gltf"] }
+amethyst = { git = "https://github.com/amethyst/amethyst", features = ["nightly", "vulkan"], branch = "master" }
 serde = { version = "*", features = ["derive"] }
 specs-physics = "*"

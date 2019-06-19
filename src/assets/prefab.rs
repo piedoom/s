@@ -1,39 +1,29 @@
 use crate::assets::config::GameConfig;
 use amethyst::renderer::{
     camera::CameraPrefab,
-    formats::{mesh::MeshPrefab, mtl::MaterialPrefab},
     light::LightPrefab,
-    rendy::mesh::{Normal, Position, Tangent, TexCoord},
     sprite::{
         prefab::{SpriteRenderPrefab, SpriteSheetPrefab},
-        SpriteRender,
     },
     transparent::Transparent,
 };
 use amethyst::{
-    animation::AnimationSetPrefab,
     assets::{
-        AssetPrefab, AssetStorage, Handle, Prefab, PrefabData, PrefabLoader, ProgressCounter,
+        AssetStorage, Handle, Prefab, PrefabData, PrefabLoader, ProgressCounter,
         RonFormat,
     },
-    controls::ControlTagPrefab,
     core::{
-        ecs::Component,
-        ecs::DenseVecStorage,
         ecs::Entity,
-        ecs::{Read, WriteStorage},
+        ecs::Read,
         Named, Transform,
     },
-    derive::PrefabData,
-    gltf::{GltfSceneAsset, GltfSceneFormat},
     prelude::*,
-    utils::tag::Tag,
+    derive::PrefabData,
     Error,
 };
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-type GenMeshVertex = (Vec<Position>, Vec<Normal>, Vec<Tangent>, Vec<TexCoord>);
 use crate::components as c;
 
 // This is the main prefab data for everything.
@@ -42,9 +32,8 @@ use crate::components as c;
 #[serde(deny_unknown_fields)]
 pub struct EntityPrefabData {
     pub name: Option<Named>,
-    mesh: Option<MeshPrefab<GenMeshVertex>>,
-    material: Option<MaterialPrefab>,
-    gltf: Option<AssetPrefab<GltfSceneAsset, GltfSceneFormat>>,
+    sprite_sheet: Option<SpriteSheetPrefab>,
+    sprite: Option<SpriteRenderPrefab>,
     camera: Option<CameraPrefab>,
     transform: Option<Transform>,
     light: Option<LightPrefab>,

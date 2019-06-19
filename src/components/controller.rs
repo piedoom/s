@@ -1,4 +1,5 @@
 //! Controls and stores data for a movement
+use crate::components::weapon::Projectile;
 use amethyst::{
     assets::PrefabData,
     core::{
@@ -10,7 +11,6 @@ use amethyst::{
     error::Error,
 };
 use serde::{Deserialize, Serialize};
-use crate::components::weapon::Projectile;
 
 /// Controllers must contain hulls to function properly
 #[derive(Clone, Deserialize, Serialize, PrefabData)]

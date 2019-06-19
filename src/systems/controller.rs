@@ -16,7 +16,7 @@ impl<'a> System<'a> for ControllerSystem {
     fn run(&mut self, (mut controllers, mut transforms, time): Self::SystemData) {
         for (controller, transform) in (&mut controllers, &mut transforms).join() {
             // rotate based on unit points
-            transform.append_rotation_y_axis(
+            transform.append_rotation_z_axis(
                 // This will orient the rotation direction correctly
                 controller.rotation_control *
                 // Multiply by our turn speed, which is just a multiplier.
@@ -28,7 +28,7 @@ impl<'a> System<'a> for ControllerSystem {
             // If our input is 0, we're not changing our velocity.
             if controller.thrust_control != Float::from(0.) {
                 // Calculate impulse
-                let added_magnitude = Vector3::z().scale(
+                let added_magnitude = Vector3::y().scale(
                     controller.traction
                         * Float::from(time.delta_seconds())
                         * controller.thrust_control,
