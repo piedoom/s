@@ -1,30 +1,23 @@
-use crate::assets::config::GameConfig;
 use amethyst::renderer::{
     camera::CameraPrefab,
     light::LightPrefab,
-    sprite::{
-        prefab::{SpriteRenderPrefab, SpriteSheetPrefab},
-    },
+    sprite::prefab::{SpriteRenderPrefab, SpriteSheetPrefab},
     transparent::Transparent,
 };
 use amethyst::{
-    assets::{
-        AssetStorage, Handle, Prefab, PrefabData, PrefabLoader, ProgressCounter,
-        RonFormat,
-    },
-    core::{
-        ecs::Entity,
-        ecs::Read,
-        Named, Transform,
-    },
-    prelude::*,
+    assets::{AssetStorage, Handle, Prefab, PrefabData, PrefabLoader, ProgressCounter, RonFormat},
+    core::{ecs::Entity, ecs::Read, Named, Transform},
     derive::PrefabData,
+    prelude::*,
     Error,
 };
 
+use crate::components as c;
+use amethyst::utils::application_root_dir;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use crate::components as c;
+use std::fs::read_dir;
+use walkdir::WalkDir;
 
 // This is the main prefab data for everything.
 // Only define the ones you want to add to your entity.
@@ -70,32 +63,43 @@ impl EntityPrefabs {
 // These prefabs are then stored in a resource of type EntityPrefabs that is used by the spawner system.
 // At initialization time, we put temporary keys for the prefabs since they're not loaded yet.
 // When their loading is finished, we read the name of the entity inside to change the keys. This is done in the update_prefabs function.
-pub fn initialize_prefabs(world: &mut World, config_handle: Handle<GameConfig>) -> ProgressCounter {
-    type Data<'a> = (
-        Read<'a, AssetStorage<GameConfig>>,
-        PrefabLoader<'a, EntityPrefabData>,
-    );
-    let (progress, prefabs) = world.exec(|(config_storage, loader): Data| {
-        let config = &config_storage.get(&config_handle.clone()).unwrap();
-        let mut prefabs = EntityPrefabs::default();
+pub fn initialize_prefabs(world: &mut World, prefabs_path: &'static str) -> ProgressCounter {
+    let (progress, prefabs_resource) = world.exec(|loader: PrefabLoader<EntityPrefabData>| {
+        let mut prefabs_resource = EntityPrefabs::default();
         let mut progress_counter = ProgressCounter::new();
 
-        // loop over and load all of our prefabs
-        let prefab_iter = {
-            config.prefabs.iter().map(|prefab_path| {
-                loader.load(prefab_path.clone(), RonFormat, &mut progress_counter)
+        // get the directory of prefabs
+        let absolute_prefabs_path = application_root_dir().unwrap().join(prefabs_path);
+        let prefabs = WalkDir::new(absolute_prefabs_path)
+            .into_iter()
+            .filter_map(|e| {
+                // discard if error or directory
+                if e.is_ok() {
+                    let r = e.unwrap();
+                    if r.file_type().is_file() {
+                        return Some(r);
+                    }
+                }
+                None
             })
-        };
+            .map(|entry| {
+                println!("{}", entry.path().display());
+                loader.load(
+                    entry.path().to_string_lossy(),
+                    RonFormat,
+                    &mut progress_counter,
+                )
+            });
 
         // Add the collection to a resource
-        for (count, prefab) in prefab_iter.enumerate() {
-            prefabs.insert(format!("temp_prefab_{}", count), prefab);
+        for (count, prefab) in prefabs.enumerate() {
+            prefabs_resource.insert(format!("temp_prefab_{}", count), prefab);
         }
 
-        (progress_counter, prefabs)
+        (progress_counter, prefabs_resource)
     });
 
-    world.add_resource(prefabs);
+    world.add_resource(prefabs_resource);
 
     progress
 }

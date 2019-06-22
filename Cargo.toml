@@ -8,3 +8,4 @@ edition = "2018"
 amethyst = { git = "https://github.com/amethyst/amethyst", features = ["nightly", "vulkan"], branch = "master" }
 serde = { version = "*", features = ["derive"] }
 specs-physics = "*"
+walkdir = "*"

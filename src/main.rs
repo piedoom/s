@@ -3,10 +3,10 @@
 mod assets;
 mod components;
 mod render;
+mod resources;
 mod states;
 mod systems;
 
-use crate::assets::config::GameConfig;
 use crate::assets::prefab::EntityPrefabData;
 use crate::render::Graph;
 use crate::systems as s;
@@ -26,11 +26,12 @@ use amethyst::{
 use systems::input::GameBindings;
 
 fn main() -> amethyst::Result<()> {
-     amethyst::Logger::from_config(amethyst::LoggerConfig {
+    amethyst::Logger::from_config(amethyst::LoggerConfig {
         log_file: Some("s.log".into()),
         level_filter: amethyst::LogLevelFilter::Error,
         ..Default::default()
-    }).start();
+    })
+    .start();
 
     let app_path = application_root_dir()?;
     let (assets_path, config_path) = (
@@ -40,7 +41,9 @@ fn main() -> amethyst::Result<()> {
 
     let game_data = GameDataBuilder::default()
         // The WindowBundle provides all the scaffolding for opening a window and drawing to it
-        .with_bundle(WindowBundle::from_config_path(config_path.join("display.ron")))?
+        .with_bundle(WindowBundle::from_config_path(
+            config_path.join("display.ron"),
+        ))?
         // Add the transform bundle which handles tracking entity positions
         .with_bundle(TransformBundle::new())?
         .with_bundle(
@@ -57,7 +60,6 @@ fn main() -> amethyst::Result<()> {
             "sprite_sheet_processor",
             &[],
         )
-        .with(Processor::<GameConfig>::new(), "config_processor", &[])
         // Custom systems
         .with(s::InputSystem::default(), "game_input_system", &[])
         .with(
@@ -76,7 +78,7 @@ fn main() -> amethyst::Result<()> {
 
     let mut game = Application::new(
         assets_path,
-        states::load::LoadConfigState::default(),
+        states::load::LoadInitialState::default(),
         game_data,
     )?;
     game.run();

@@ -1,6 +1,5 @@
 use amethyst::{
     core::ecs::prelude::*,
-    ui::{DrawUiDesc, UiBundle},
     renderer::{
         palette::Srgb,
         pass::{
@@ -27,6 +26,7 @@ use amethyst::{
         visibility::VisibilitySortingSystem,
         Kind,
     },
+    ui::{DrawUiDesc, UiBundle},
     window::{ScreenDimensions, Window, WindowBundle},
 };
 

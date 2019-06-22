@@ -36,7 +36,6 @@ impl<'a> System<'a> for WeaponSystem {
                 let poss_weapon = manager.current_weapon_mut();
                 if let Some(weapon) = poss_weapon {
                     if current_time >= weapon.last_fired + weapon.recoil {
-                        println!("Firing");
                         // reset our recoil timer
                         weapon.last_fired = current_time;
                         // create an entity and assign it a clone of our weapon's `Projectile` component
