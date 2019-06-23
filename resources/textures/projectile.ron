@@ -1,0 +1,44 @@
+#![enable(implicit_some)]
+Sheet(
+    // TexturePrefab
+    texture: File("textures/projectile.png", (
+        "IMAGE", (
+            sampler_info: (
+                min_filter: Nearest,
+                mag_filter: Nearest,
+                mip_filter: Nearest,
+                wrap_mode: (Tile, Tile, Tile),
+                lod_bias: (0),
+                lod_range: (
+                    start: ( 0 ),
+                    end: ( 8000 ),
+                ),
+                comparison: None,
+                border: (0),
+                anisotropic: Off,
+            ),
+        ),
+    )),
+    sprites: [
+        // Grey bat sprites
+        // Sprites with indexes from 0 to 5
+        Grid((
+            texture_width: 16,
+            texture_height: 16,
+            columns: 1,
+            rows: 1,
+            cell_size: (0, 0),
+        )),
+        // Brown bat sprites
+        // Sprites with indexes from 6 to 11
+        List((
+            texture_width: 16,
+            texture_height: 16,
+            sprites: [
+                (x: 0,   y: 0, width: 16, height: 16),
+            ],
+        )),
+    ],
+    // optional
+    name: "sheet",
+),

@@ -77,13 +77,15 @@ pub fn initialize_prefabs(world: &mut World, prefabs_path: &'static str) -> Prog
                 if e.is_ok() {
                     let r = e.unwrap();
                     if r.file_type().is_file() {
-                        return Some(r);
+                        Some(r)
+                    } else {
+                        None
                     }
+                } else {
+                    None
                 }
-                None
             })
             .map(|entry| {
-                println!("{}", entry.path().display());
                 loader.load(
                     entry.path().to_string_lossy(),
                     RonFormat,

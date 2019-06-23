@@ -32,66 +32,53 @@ impl SimpleState for LoadInitialState {
         // -------------------------- //
         // --- Sprite Sheet Loads --- //
         // -------------------------- //
-        type SSData<'s> = (
-            WriteExpect<'s, Loader>,
-            Write<'s, AssetStorage<Texture>>,
-            Write<'s, AssetStorage<SpriteSheet>>,
-        );
+        world.add_resource({
+            let loader = world.write_resource::<Loader>();
+            let textures = world.write_resource::<AssetStorage<Texture>>();
+            let sprite_sheets = world.write_resource::<AssetStorage<SpriteSheet>>();
 
-        let sheet_resource = world.exec(|(mut loader, mut textures, mut sprite_sheets): SSData| {
             let mut sheet_resource = SResource::default();
             // get folders, and only ron files
             let sprite_sheets_dir_path = application_root_dir().unwrap().join(TEXTURES_PATH);
-            let sprite_sheets_iter = WalkDir::new(sprite_sheets_dir_path).into_iter().filter_map(|e| {
-                // discard if error or directory
-                if e.is_ok() {
-                    let r = e.unwrap();
-                    if r.file_type().is_file() {
-                        return Some(r);
+            for entry in WalkDir::new(sprite_sheets_dir_path.clone()).into_iter() {
+                dbg!(&entry);
+                let entry = entry.unwrap();
+                if entry.clone().file_type().is_file() {
+                    let extension = entry
+                        .path()
+                        .extension()
+                        .expect("Could not read file extension.")
+                        .to_string_lossy()
+                        .to_string();
+                    // break early if not a ron file
+                    if &extension != "ron" {
+                        continue;
                     }
+                    let parent_dir = entry.path().parent().unwrap().to_string_lossy().to_string();
+                    let file_stem = entry.path().file_stem().unwrap().to_string_lossy().to_string();
+                    // The key will always be the full path minus any extension
+                    let k = parent_dir + "/" + &file_stem;
+                        
+                    // Our value here will always be the texture handle
+                    let v = {
+                        let texture_handle = loader.load(
+                            k.clone() + ".png",
+                            ImageFormat::default(),
+                            &mut self.progress,
+                            &textures,
+                        );
+                        loader.load(
+                            k.clone() + ".ron",
+                            SpriteSheetFormat(texture_handle),
+                            &mut self.progress,
+                            &sprite_sheets,
+                        )
+                    };
+                    // Insert these new values into our resource
+                    sheet_resource.insert(k.clone(), v);
                 }
-                None
-            });
-
-            for entry in sprite_sheets_iter {
-                let extension = entry
-                    .path()
-                    .extension()
-                    .expect("Could not read file extension.")
-                    .to_string_lossy()
-                    .to_string();
-                // break early if not a ron file
-                if &extension != "ron" {
-                    break;
-                }
-                // The key will always be the full path minus any extension
-                let k = entry
-                    .path()
-                    .file_stem()
-                    .unwrap()
-                    .to_string_lossy()
-                    .to_string();
-                // Our value here will always be the texture handle
-                let v = {
-                    let texture_handle = loader.load(
-                        entry.path().join(".png").to_string_lossy(),
-                        ImageFormat::default(),
-                        &mut self.progress,
-                        &textures,
-                    );
-                    loader.load(
-                        entry.path().join(".ron").to_string_lossy(),
-                        SpriteSheetFormat(texture_handle),
-                        &mut self.progress,
-                        &sprite_sheets,
-                    )
-                };
-                // Insert these new values into our resource
-                sheet_resource.insert(k.clone(), v);
             }
-            sheet_resource
         });
-        data.world.add_resource(sheet_resource);
     }
 
     fn update(&mut self, _data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
