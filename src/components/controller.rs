@@ -49,7 +49,7 @@ impl Controller {
         self.max_speed = projectile.max_speed;
         self.traction = projectile.traction;
         // Projectile should travel along continuously
-        self.thrust_control = Float::from(-1.0);
+        self.thrust_control = Float::from(1.0);
         self.rotation_control = Float::from(0.0);
         self
     }

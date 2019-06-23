@@ -32,7 +32,7 @@ impl Default for Weapon {
         Self {
             name: String::from("Weapon"),
             speed: Float::from(10.),
-            recoil: Duration::from_millis(250),
+            recoil: Duration::from_millis(50),
             last_fired: Duration::from_secs(0),
             projectile: Projectile::default(),
         }
@@ -58,8 +58,8 @@ impl Projectile {}
 impl Default for Projectile {
     fn default() -> Self {
         Self {
-            max_speed: Float::from(10.0),
-            traction: Float::from(10.0),
+            max_speed: Float::from(300.0),
+            traction: Float::from(1000.0),
         }
     }
 }

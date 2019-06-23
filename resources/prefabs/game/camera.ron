@@ -5,10 +5,10 @@ Prefab (
             data: (
                 name: Named(name: "game::camera"),
                 camera: Orthographic(
-                    left: -400.0,
-                    top: -400.0,
-                    right: 400.0,
-                    bottom: 400.0,
+                    left: -700.0,
+                    top: -480.0,
+                    right: 700.0,
+                    bottom: 480.0,
                     znear: 0.1,
                     zfar: 2000.0,
                 ),
