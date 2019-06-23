@@ -51,6 +51,9 @@ impl Weapon {
 pub struct Projectile {
     pub max_speed: Float,
     pub traction: Float,
+    /// Initial speed added to the intial velocity. A higher value will act more like a bullet, a lower
+    /// will act more like a missle.
+    pub initial_speed: Float,
 }
 
 impl Projectile {}
@@ -58,8 +61,9 @@ impl Projectile {}
 impl Default for Projectile {
     fn default() -> Self {
         Self {
-            max_speed: Float::from(300.0),
+            max_speed: Float::from(2000.0),
             traction: Float::from(1000.0),
+            initial_speed: Float::from(500.0),
         }
     }
 }

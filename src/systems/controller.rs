@@ -38,10 +38,19 @@ impl<'a> System<'a> for ControllerSystem {
                 // Change our velocity vector
                 controller.velocity += added_vector;
 
+                // add an initial velocity if applicable
+                if controller.start_speed > Float::from(0.0) {
+                    controller.velocity += transform.rotation() * Vector3::y().scale(controller.start_speed);
+                    // reset initial velocity so we don't apply across more than one frame
+                    controller.start_speed = Float::from(0.0);
+                }
+
                 // Limit velocity
                 let magnitude = controller.velocity.magnitude();
                 if magnitude > controller.max_speed {
                     controller.velocity /= magnitude / controller.max_speed;
+                } else if magnitude < controller.min_speed {
+                    controller.velocity = transform.rotation() * Vector3::y().scale(controller.min_speed);
                 }
             }
 

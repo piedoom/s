@@ -24,6 +24,8 @@ pub struct Controller {
     pub turn_speed: Float,
     pub traction: Float,
     pub max_speed: Float,
+    pub min_speed: Float,
+    pub start_speed: Float,
 }
 
 impl Default for Controller {
@@ -35,6 +37,8 @@ impl Default for Controller {
             turn_speed: Float::from(1.0),
             traction: Float::from(0.05),
             max_speed: Float::from(10.0),
+            min_speed: Float::from(0.0),
+            start_speed: Float::from(0.0),
         }
     }
 }
@@ -48,6 +52,8 @@ impl Controller {
     pub fn set_from_projectile(mut self, projectile: &Projectile) -> Self {
         self.max_speed = projectile.max_speed;
         self.traction = projectile.traction;
+        self.min_speed = projectile.initial_speed;
+        self.start_speed = self.velocity.magnitude();
         // Projectile should travel along continuously
         self.thrust_control = Float::from(1.0);
         self.rotation_control = Float::from(0.0);
